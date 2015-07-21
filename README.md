@@ -45,7 +45,7 @@ R gives a full power to look at the every aspect of dump data. Let us look at th
 
 `filter(dump,grepl("SharedPool",name)) %>% print.dump()`
 
-### Print Threads by Specific State
+### Obtain Threads by Specific State
 
 `filter(dump,state=="runnable") %>% dump.threads()`
 
