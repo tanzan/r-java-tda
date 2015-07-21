@@ -1,11 +1,20 @@
 library(stringr)
 library(dplyr)
 
-read.dump <-function(file){
+read.dump <-function(file, jvm_version="oracle-8"){
   raw_threads <- readLines(file)
   
   header_regexp <- "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
+  
+  if(jvm_version != "oracle-8" && jvm_version != "oracle-7"){
+    stop("wrong jvm version")  
+  }     
+  
   java_thread_regexp <- "^\"(.+)\" .+ prio=(\\d{1,2}) os_prio=(\\d{1,2}) tid=(0x[\\da-f]+) nid=(0x[\\da-f]+) (.+) \\[(.+)\\]$"
+  if (jvm_version == "oracle-7"){
+    java_thread_regexp <- "^\"(.+)\" .+ prio=(\\d{1,2}) tid=(0x[\\da-f]+) nid=(0x[\\da-f]+) (.+) \\[(.+)\\]$"  
+  }
+  
   sys_thread_regexp <- "^\"(.+)\" os_prio=(\\d{1,2}) tid=(0x[\\da-f]+) nid=(0x[\\da-f]+) (.+)$"
   
   java_thread <- NULL
@@ -13,11 +22,11 @@ read.dump <-function(file){
   snapshot_str <- NULL
   
   threads <- data.frame(type=character(),snapshot_time=character(),name=character(),prio=character(),os_prio=character(),id=character(), native_id=character(), 
-                        state=character(), addr=character(), java_state=character(), dump=character(), stringsAsFactors = F)
+                        state=character(), addr=character(), java_state=character(), dump=character(), stringsAsFactors = F)  
   
   for(t in raw_threads) {
     if (grepl(header_regexp,t,perl = T)){
-      snapshot_str <- t  
+      snapshot_str <- t        
     } else if(grepl(java_thread_regexp,t,perl = T)){
       java_thread <- t 
       java_stack <- F
@@ -27,7 +36,11 @@ read.dump <-function(file){
       java_stack <- F
     } else if (!is.null(java_thread)){
       g <- str_match(java_thread,java_thread_regexp)
-      threads[nrow(threads)+1,] = str_trim(c("java",snapshot_str,g[2:length(g)],str_match(t,"\\s.java.lang.Thread.State: (.+)")[2],paste(java_thread,t,sep="\n")))
+      if (jvm_version == "oracle-8"){
+        threads[nrow(threads)+1,] = str_trim(c("java",snapshot_str,g[2:length(g)],str_match(t,"\\s.java.lang.Thread.State: (.+)")[2],paste(java_thread,t,sep="\n")))  
+      } else {
+        threads[nrow(threads)+1,] = str_trim(c("java",snapshot_str,g[2:3],NA,g[4:length(g)],str_match(t,"\\s.java.lang.Thread.State: (.+)")[2],paste(java_thread,t,sep="\n")))
+      }      
       java_thread <- NULL
       java_stack <- T
     } else if(java_stack && length(t) != 0){
