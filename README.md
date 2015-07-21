@@ -1,7 +1,7 @@
 # r-java-tda
 R Utils for Java Thread Dump Analisys
 
-To this moment tested for Oracle Java 8 on Linux.
+To this moment the script tested for Oracle Java 8 on Linux.
 
 ## R Package Requirements
 
