@@ -1,6 +1,8 @@
 # r-java-tda
 R Utils for Java Thread Dump Analisys
 
+To this moment tested for oracle java 8 on linux.
+
 ## R Package Requirements
 
 `install.packages("dplyr")`
