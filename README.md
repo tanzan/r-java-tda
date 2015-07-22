@@ -51,7 +51,7 @@ R gives a full power to look at the every aspect of dump data. Let us look at th
 
 `filter(dump,state=="runnable") %>% dump.threads()`
 
-### Print Unique Dump Entries For Runnables whith Specific Name Pattern
+### Print Unique Dump Entries For Runnables with Specific Name Pattern
 `dump %>% filter(grepl("SharedPool",name),java_state=="RUNNABLE") %>% select(dump) %>% unique() %>% print.dump(file="sharedpool.txt")`
 ### Etc ...
 
