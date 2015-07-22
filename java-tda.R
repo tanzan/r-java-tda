@@ -70,8 +70,8 @@ dump.summary.state.plot <- function(dump) {
   with(d,barplot(count,names.arg = state))
 }
 
-print.dump <- function(dump){
-  cat(dump$dump,sep="\n")
+print.dump <- function(dump,file=""){
+  cat(dump$dump,file,sep="\n")
 }
 
 dump.snapshots <- function(dump){
