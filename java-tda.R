@@ -71,7 +71,7 @@ dump.summary.state.plot <- function(dump) {
 }
 
 print.dump <- function(dump,file=""){
-  cat(dump$dump,file,sep="\n")
+  cat(dump$dump,file=file,sep="\n")
 }
 
 dump.snapshots <- function(dump){
