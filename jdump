@@ -18,7 +18,7 @@ shift
 done
 PID=$1
 if [ -z "$PID" ]; then
-    echo "usage: reap [-n <number of snapshots, defalut 10>] [-d <delay in secs, defalult 10>] <pid>"
+    echo "usage: jdump [-n <number of snapshots, defalut 10>] [-d <delay in secs, defalult 10>] <pid>"
     exit 1
 fi 
 kill -s 0 $PID &> /dev/null
