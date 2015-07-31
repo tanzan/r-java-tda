@@ -31,6 +31,7 @@ if [ -z "$JAVA_HOME" ]; then
     exit 1
 fi 
 FILE_SUFFIX=`date +%Y-%m-%d_%H-%M-%S`.txt 
-top -d ${DELAY:-10} -b -n ${NSNAPSHOTS:-10} -H > top-${FILE_SUFFIX} &
-for i in `seq 1 ${NSNAPSHOTS:-10}`; do $JAVA_HOME/bin/jstack $PID  >> dump-${FILE_SUFFIX}; sleep ${DELAY:-10}; done &
+FILE_PREFIX=`hostname`
+top -d ${DELAY:-10} -b -n ${NSNAPSHOTS:-10} -H > ${FILE_PREFIX}-top-${FILE_SUFFIX} &
+for i in `seq 1 ${NSNAPSHOTS:-10}`; do $JAVA_HOME/bin/jstack $PID  >> ${FILE_PREFIX}-dump-${FILE_SUFFIX}; sleep ${DELAY:-10}; done &
 wait 
