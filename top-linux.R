@@ -23,16 +23,18 @@ read.top <- function(file) {
   
   threads <- read.table(text = "", colClasses = col_classes, col.names = col_names, stringsAsFactors = F)
   
-  read.summary <- function(skip = 0){
+  read.summary <- function(skip = 0) {
     
-    l <- scan(file=con, nlines = 1, what=character(), skip = skip, sep = ",", quiet = T)
+    if (skip > 0) readLines(con = con, n = skip)
+    l <- readLines(con = con, n = 1)
     
     if(length(l) == 0){
       return(vector())
     }
     
-    snapshot <- str_match(l[1], "top - (\\d{2}:\\d{2}:\\d{2}).+")[2] 
-    load_avg <- as.numeric(c(str_match(l[4], " load average: ([\\.\\d]+)")[2], str_trim(l[5:6])))
+    m <- str_match(l[1], "top - (\\d{2}:\\d{2}:\\d{2}) up\\s+(?:\\d+ days, \\d+:\\d+,|\\d+:\\d+,)\\s+[^,]+,\\s+load average: ([^,]+), ([^,]+), (.+)")
+    snapshot <- m[2] 
+    load_avg <- as.numeric(m[3:5])
     
     t <- scan(file=con, nlines = 1, what=character(), sep = ",", quiet = T)
     nthreads <- as.integer(str_match(t[1], "Threads: (\\d+) total")[2])
