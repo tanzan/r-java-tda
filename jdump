@@ -102,10 +102,14 @@ dump_top()
 
 dump_threads()
 {
-    for i in `seq 1 ${NSNAPSHOTS:-1}`; do 
-        $JAVA_HOME/bin/jstack $PID  >> ${THREADS_FILE}
-        sleep ${DELAY:-10} 
-    done &
+    if [[ $NSNAPSHOTS < 2 ]]; then
+        $JAVA_HOME/bin/jstack $PID  > ${THREADS_FILE}
+    else
+        for i in `seq 1 ${NSNAPSHOTS:-1}`; do 
+            $JAVA_HOME/bin/jstack $PID  >> ${THREADS_FILE}
+            sleep ${DELAY:-10} 
+        done &
+    fi  
 }
 
 if [ -n "$TOP_ONLY" ] && [ -z "$THREADS_ONLY" ]; then
@@ -119,6 +123,7 @@ fi
 
 if [ -n "$COMPRESS" ]; then
      tar -czf ${FILE_PREFIX}-jdump-${FILE_SUFFIX}.tar.gz ${THREADS_FILE} ${TOP_FILE}
+     rm ${THREADS_FILE} ${TOP_FILE}
 fi
 
 wait 
