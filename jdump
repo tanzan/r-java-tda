@@ -112,18 +112,26 @@ dump_threads()
     fi  
 }
 
+may_compress()
+{
+    if [ -n "$COMPRESS" ]; then
+         tar -czf ${FILE_PREFIX}-jdump-${FILE_SUFFIX}.tar.gz $@
+         rm -f $@
+    fi
+}
+
 if [ -n "$TOP_ONLY" ] && [ -z "$THREADS_ONLY" ]; then
     dump_top
+    wait
+    may_compress ${TOP_FILE}
 elif [ -n "$THREADS_ONLY" ] && [ -z "$TOP_ONLY" ]; then 
     dump_threads
+    wait
+    may_compress ${THREADS_FILE}
 else
     dump_top
     dump_threads
+    wait
+    may_compress ${THREADS_FILE} ${TOP_FILE} 
 fi
 
-if [ -n "$COMPRESS" ]; then
-     tar -czf ${FILE_PREFIX}-jdump-${FILE_SUFFIX}.tar.gz ${THREADS_FILE} ${TOP_FILE}
-     rm -f ${THREADS_FILE} ${TOP_FILE}
-fi
-
-wait 
