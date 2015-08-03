@@ -123,7 +123,7 @@ fi
 
 if [ -n "$COMPRESS" ]; then
      tar -czf ${FILE_PREFIX}-jdump-${FILE_SUFFIX}.tar.gz ${THREADS_FILE} ${TOP_FILE}
-     rm ${THREADS_FILE} ${TOP_FILE}
+     rm -f ${THREADS_FILE} ${TOP_FILE}
 fi
 
 wait 
