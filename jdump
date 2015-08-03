@@ -1,37 +1,124 @@
 #!/bin/bash
-while [[ $# > 1 ]]; do
-key="$1"
-case $key in
-    -d)
-    DELAY="$2"
-    shift 
-    ;;
-    -n)
-    NSNAPSHOTS="$2"
-    shift
-    ;;
-    *)      
-    # unknown option
-    ;;
-esac
-shift
-done
-PID=$1
-if [ -z "$PID" ]; then
-    echo "usage: jdump [-n <number of snapshots, defalut 10>] [-d <delay in secs, defalult 10>] <pid>"
-    exit 1
-fi 
-kill -s 0 $PID &> /dev/null
-if [ $? -ne 0 ]; then
-    echo "Process with PID=${PID} does not exist"
+
+usage()
+{
+    printf "Usage:\n"
+    printf "  jdump [options] <pid>\n\n"
+    printf "Options:\n"
+    printf "  -d delay between snapshots, default 10\n"
+    printf "  -n number of snapshots, default 1\n"
+    printf "  -t make only top snapshots\n"
+    printf "  -H make only thread snapshots\n"
+    printf "  -o output dir, default .\n"
+    printf "  -c compress results\n"
+    printf "  -h print this help message\n"
+}
+
+if [[ $# == 0 ]]; then
+    usage
     exit 1
 fi
+
+error()
+{
+    printf "$1!\n\n" "$2" 1>&2
+    usage
+    exit 2
+}
+
+while getopts :d:n:o:tHch opt; do
+  case $opt in
+      d)
+      DELAY=$OPTARG
+      if [[ ! $DELAY =~ ^-?[0-9]+$ ]]; then
+          error "Illegal delay(-d) value: %s" $DELAY
+      fi 
+      ;;
+      n)
+      NSNAPSHOTS=$OPTARG
+      if [[ ! $NSNAPSHOTS =~ ^-?[0-9]+$ ]]; then
+          error "Illegal number of snapshots(-n) value: %s" $NSNAPSHOTS
+      fi 
+      ;;
+      t)
+      TOP_ONLY=1
+      ;;
+      H)
+      THREADS_ONLY=1
+      ;;
+      o)
+      OUTPUT_DIR=$OPTARG
+      if [ ! -d "$OUTPUT_DIR" ]; then
+          error "Oputput dir(-o) '%s' does not exist" $OUTPUT_DIR
+      fi
+      ;;
+      c)
+      COMPRESS=1
+      ;;
+      h)
+      usage
+      exit 0
+      ;;   
+      \?)
+      error "Unknown option: -%s" $OPTARG 
+      usage
+      exit 1
+      ;;
+      \:)
+      error "Option -%s requires an argument" $OPTARG 
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+shift $(($OPTIND - 1))
+
+if [[ $# == 0 ]]; then
+    error "PID required"   
+fi
+
+PID=$1
+
+kill -s 0 $PID &> /dev/null
+if [ $? -ne 0 ]; then
+    error "Process with PID=${PID} does not exist"
+fi
+
 if [ -z "$JAVA_HOME" ]; then
-    echo "System variable JAVA_HOME is not set"
-    exit 1
+    error "System variable JAVA_HOME is not set"
 fi 
-FILE_SUFFIX=`date +%Y-%m-%d_%H-%M-%S`.txt 
-FILE_PREFIX=`hostname`
-top -d ${DELAY:-10} -b -n ${NSNAPSHOTS:-10} -H > ${FILE_PREFIX}-top-${FILE_SUFFIX} &
-for i in `seq 1 ${NSNAPSHOTS:-10}`; do $JAVA_HOME/bin/jstack $PID  >> ${FILE_PREFIX}-dump-${FILE_SUFFIX}; sleep ${DELAY:-10}; done &
+
+FILE_SUFFIX=`date +%Y-%m-%d_%H-%M-%S` 
+OUTPUT_DIR="${OUTPUT_DIR:-.}"
+FILE_PREFIX="${OUTPUT_DIR:-.}"/`hostname`
+THREADS_FILE=${FILE_PREFIX}-dump-${FILE_SUFFIX}.txt
+TOP_FILE=${FILE_PREFIX}-top-${FILE_SUFFIX}.txt
+
+dump_top()
+{
+    top -d ${DELAY:-10} -b -n ${NSNAPSHOTS:-1} -H > ${TOP_FILE} &
+}
+
+dump_threads()
+{
+    for i in `seq 1 ${NSNAPSHOTS:-1}`; do 
+        $JAVA_HOME/bin/jstack $PID  >> ${THREADS_FILE}
+        sleep ${DELAY:-10} 
+    done &
+}
+
+if [ -n "$TOP_ONLY" ] && [ -z "$THREADS_ONLY" ]; then
+    dump_top
+elif [ -n "$THREADS_ONLY" ] && [ -z "$TOP_ONLY" ]; then 
+    dump_threads
+else
+    dump_top
+    dump_threads
+fi
+
+if [ -n "$COMPRESS" ]; then
+     tar -czf ${FILE_PREFIX}-jdump-${FILE_SUFFIX}.tar.gz ${THREADS_FILE} ${TOP_FILE}
+fi
+
 wait 
