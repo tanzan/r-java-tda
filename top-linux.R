@@ -28,9 +28,7 @@ read.top <- function(file) {
     if (skip > 0) readLines(con = con, n = skip)
     l <- readLines(con = con, n = 1)
     
-    if(length(l) == 0){
-      return(vector())
-    }
+    if(length(l) == 0) return(vector())
     
     m <- str_match(l[1], "top - (\\d{2}:\\d{2}:\\d{2}) up\\s+(?:\\d+ days, \\d+:\\d+,|\\d+:\\d+,)\\s+[^,]+,\\s+load average: ([^,]+), ([^,]+), (.+)")
     snapshot <- m[2] 
@@ -58,7 +56,7 @@ read.top <- function(file) {
     threads <- rbind(threads,read.threads(s[[length(s)]],s[[1]]))
     s <- read.summary(skip = 1)
   }
-  merge(summary,select(threads,-params))
+  summary %>% merge(select(threads,-params)) %>% mutate(snapshot=hms(snapshot))
 }
 
 top.snapshots <- function(top) {
