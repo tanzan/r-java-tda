@@ -1,6 +1,5 @@
 library(dplyr)
 library(stringr)
-library(lubridate)
 
 read.top <- function(file) {
   
@@ -40,14 +39,15 @@ read.top <- function(file) {
     c <- scan(file=con, nlines = 1, what=character(), sep = ",", quiet = T)
     cpu <- as.numeric(gsub("[^\\.\\d]+(\\d+\\.\\d+)[^\\.\\d]+","\\1", c ,perl = T)) 
     
-    list(snapshot, load_avg[1],load_avg[2], load_avg[3], cpu[1], cpu[2], cpu[3], cpu[4], cpu[5], cpu[6], cpu[7], cpu[8], nthreads)
+    list(snapshot, load_avg[1],load_avg[2], load_avg[3], cpu[1], cpu[2], cpu[3], cpu[4], 
+         cpu[5], cpu[6], cpu[7], cpu[8], nthreads)
   }
   
   read.threads <- function(nthreads,snapshot) {
     t <- as.data.frame(scan(file=con, nlines = nthreads, what=sapply(col_classes,do.call,list(0)), skip = 4, 
                             strip.white = T,fill = T, na.strings = "",quiet = T), stringsAsFactors=F) 
     names(t) <- col_names
-    mutate(t,snapshot=snapshot)
+    mutate(t, snapshot = snapshot)
   }
   
   s <- read.summary()
@@ -56,7 +56,7 @@ read.top <- function(file) {
     threads <- rbind(threads,read.threads(s[[length(s)]],s[[1]]))
     s <- read.summary(skip = 1)
   }
-  summary %>% merge(select(threads,-params)) %>% mutate(snapshot=hms(snapshot))
+  summary %>% merge(select(threads,-params))
 }
 
 top.snapshots <- function(top) {

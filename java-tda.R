@@ -1,8 +1,8 @@
-read.dump <-function(file, jvm_version="hotspot-8"){
-  
-  library(stringr)
-  library(dplyr)
-  library(data.table)
+library(stringr)
+library(dplyr)
+library(data.table)
+
+read.dump <-function(file, jvm_version="hotspot-8") {
   
   if(jvm_version != "hotspot-8" && jvm_version != "hotspot-7"){
     stop("wrong jvm version: expected hotspot-8 or hotspot-7")  
