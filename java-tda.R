@@ -76,7 +76,7 @@ read.dump <-function(file, jvm_version="hotspot-8") {
     }  
   }
   
-  mutate(threads, snapshot = snapshot, prio = as.integer(prio), os_prio = as.integer(os_prio),
+  mutate(threads, snapshot = as.POSIXct(snapshot), prio = as.integer(prio), os_prio = as.integer(os_prio),
          native_id_hex = native_id, native_id = as.integer(native_id)) %>%
   select(type, snapshot, name, id, native_id, native_id_hex, prio, os_prio, state, java_state, addr, dump) %>%
   arrange(snapshot, type, name) %>% as.data.frame()
@@ -100,5 +100,5 @@ print.dump <- function(dump, file=""){
 }
 
 dump.snapshots <- function(dump){
-  unique(dump$snapshot_time)  
+  unique(dump$snapshot)  
 }
