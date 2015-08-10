@@ -1,6 +1,7 @@
 library(stringr)
 library(dplyr)
 library(data.table)
+library(ggplot2)
 
 read.dump <-function(file, jvm_version="hotspot-8") {
   
@@ -92,7 +93,9 @@ dump.summary.state <-function(dump){
 
 dump.summary.state.plot <- function(dump) {
   d <- dump %>% group_by(state) %>% summarise(count = n()) %>% as.data.frame()  
-  with(d, barplot(count, names.arg = state))
+  ggplot(data = d, aes(x = state, y = count)) + 
+    ggtitle("Thread Count By State") +
+    geom_bar(stat = "identity", fill = "deepskyblue3")
 }
 
 print.dump <- function(dump, file=""){
