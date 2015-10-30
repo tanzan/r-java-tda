@@ -31,7 +31,7 @@ read.dump <-function(file, jvm_version="hotspot-8") {
   java_thread_regexp <- "^\"(.+)\" .+ prio=(\\d{1,2}) os_prio=(\\d{1,2}) tid=(0x[\\da-f]+) nid=(0x[\\da-f]+) (.+) \\[(.+)\\]$"
   sys_thread_regexp <- "^\"(.+)\" os_prio=(\\d{1,2}) tid=(0x[\\da-f]+) nid=(0x[\\da-f]+) (.+)$"
   
-  if (jvm_version == "oracle-7"){
+  if (jvm_version == "hotspot-7"){
     java_thread_regexp <- "^\"(.+)\" .+ prio=(\\d{1,2}) tid=(0x[\\da-f]+) nid=(0x[\\da-f]+) (.+) \\[(.+)\\]$"
   }
   
